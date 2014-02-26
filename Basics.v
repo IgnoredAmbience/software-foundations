@@ -878,20 +878,26 @@ Proof.
 (** Prove the following theorem.  (You may want to first prove a
     subsidiary lemma or two.) *)
 
-Theorem andb_eq_orb : 
+Theorem andb_eq_orb :
   forall (b c : bool),
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  intros b c.
   destruct b.
-    destruct c.
-      reflexivity.
-      simpl. discriminate.
-    simpl. destruct c.
-      discriminate.
-      reflexivity.
+  (* First Case *)
+    intros c.
+    simpl.
+    intros H.
+    rewrite H.
+    reflexivity.
+  (* Second Case *)
+    intros c.
+    simpl.
+    intros H.
+    rewrite H.
+    reflexivity.
 Qed.
+
 
 (** **** Exercise: 3 stars (binary) *)
 (** Consider a different, more efficient representation of natural

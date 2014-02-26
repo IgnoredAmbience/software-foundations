@@ -935,14 +935,127 @@ Qed.
 *)
 
 Inductive bin : Type :=
-  | O : bin
-  | T : bin -> bin
-  | M : bin -> bin.
+  | B : bin           (* Zero *)
+  | M : bin -> bin    (* One more than twice a number *)
+  | T : bin -> bin.   (* Twice a number *)
 
-Definition pred (n : bin) : bin :=
+Fixpoint inc (n : bin) : bin :=
   match n with
-  | O => M O
-  | M O => T M O
+  | B   => M B
+  | T n => M n
+  | M n => T (inc n)
+  end.
+
+Example text_zero:
+  inc B = M B.
+Proof. reflexivity. Qed.
+
+Example test_even_zero:
+  inc (T B) = M B.
+Proof. reflexivity. Qed.
+
+Example test_one:
+  inc (M B) = T (M B).
+Proof. reflexivity. Qed.
+
+Example test_seven:
+  inc (M (M (M B))) = T (T (T (M B))).
+Proof. reflexivity. Qed.
+
+Fixpoint bin_to_nat (n : bin) : nat :=
+  match n with
+  | B   => O
+  | T n => 2 * (bin_to_nat n)
+  | M n => 2 * (bin_to_nat n) + 1
+  end.
+
+Example test_bin_to_nat_even_zero:
+  bin_to_nat (T B) = 0.
+Proof. reflexivity. Qed.
+
+Example test_bin_to_nat_six:
+  bin_to_nat (T (M (M B))) = 6.
+Proof. reflexivity. Qed.
+
+Example test_bin_to_nat_ten:
+  bin_to_nat (T (M (T (M B)))) = 10.
+Proof. reflexivity. Qed.
+
+(* To ramp up to showing distributivity of inc and conversion, let's prove some basic maths first! *)
+Lemma plus_0_r:
+  forall (n : nat),
+  n + 0 = n.
+Proof.
+  intros n.
+  induction n as [|n'].
+  (* Base case *)
+    reflexivity.
+  (* Ind. case *)
+    simpl.
+    rewrite IHn'.
+    reflexivity.
+Qed.
+
+Lemma plus_S_assoc:
+  forall (m n : nat),
+  m + (S n) = S (m + n).
+Proof.
+  intros m n.
+  induction m as [|m'].
+  (* Base case *)
+    reflexivity.
+  (* Ind. case *)
+    simpl.
+    rewrite IHm'.
+    reflexivity.
+Qed.
+
+Lemma plus_comm:
+  forall (m n : nat),
+  m + n = n + m.
+Proof.
+  intros m n.
+  induction n as [|n'].
+  (* Base Case *)
+    simpl.
+    rewrite plus_0_r.
+    reflexivity.
+  (* Ind. case *)
+    simpl.
+    rewrite <- IHn'.
+    rewrite plus_S_assoc.
+    reflexivity.
+Qed.
+
+(* Phew, now for what's important *)
+
+Lemma inc_bin_to_nat_distributive:
+  forall (b : bin),
+  bin_to_nat (inc b) = S (bin_to_nat b).
+Proof.
+  intros b.
+  induction b as [|b'|b'].
+  (* Base case *)
+    reflexivity.
+  (* IC1 *)
+    simpl.
+    rewrite IHb'.
+    rewrite plus_0_r.
+    rewrite plus_0_r.
+    rewrite plus_S_assoc.
+    rewrite plus_S_assoc.
+    rewrite plus_0_r.
+    reflexivity.
+  (* IC2 *)
+    simpl.
+    rewrite plus_0_r.
+    rewrite plus_S_assoc.
+    rewrite plus_0_r.
+    reflexivity.
+Qed.
+
+(* Woop! *)
+
 
 (** [] *)
 

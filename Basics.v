@@ -1055,8 +1055,6 @@ Proof.
 Qed.
 
 (* Woop! *)
-
-
 (** [] *)
 
 (* ###################################################################### *)
@@ -1122,7 +1120,19 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     _does_ terminate on all inputs, but that Coq will _not_ accept
     because of this restriction. *)
 
-(* FILL IN HERE *)
+(** A classic! Ackermann *)
+(*
+Fixpoint ackermann (m n : nat) {struct n} : nat :=
+  match m with
+  | O   => S n
+  | S m =>
+      match n with
+      | 0   => ackermann m 1
+      | S n => ackermann m (ackermann (S m) n)
+      end
+  end.
+*)
+
 (** [] *)
 
 (* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)

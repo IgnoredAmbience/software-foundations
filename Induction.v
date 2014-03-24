@@ -498,13 +498,36 @@ Proof.
   induction p as [|p'].
   Case "p = 0". rewrite mult_0_r. rewrite mult_comm. simpl. rewrite mult_0_r. reflexivity.
   Case "p = S p'".
-  (* TODO *)
-Abort.
+    rewrite mult_S_r.
+    rewrite mult_S_r.
+    rewrite mult_S_r.
+    rewrite <- plus_assoc.
+    assert (H: n + (m * p' + m) = (m * p') + (n + m)).
+    SCase "Proof of assertion".
+      rewrite plus_comm. rewrite <- plus_assoc.
+      assert (H': m + n = n + m).
+        SSCase "Proof of subassertion". rewrite plus_comm. reflexivity.
+      rewrite H'. reflexivity.
+    rewrite H.
+    assert (H1: n * p' + (m * p' + (n + m)) = (n * p' + m * p') + (n + m)).
+      SCase "Proof of subassertion".
+      rewrite plus_assoc. reflexivity.
+    rewrite H1.
+    rewrite IHp'.
+    reflexivity.
+(* Sigh, too long *)
+Qed.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction n as [|n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n'".
+    simpl. rewrite IHn'. rewrite mult_plus_distr_r. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (beq_nat_refl) *)
@@ -517,7 +540,13 @@ problem using the theorem no matter which way we state it. *)
 Theorem beq_nat_refl : forall n : nat, 
   true = beq_nat n n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  
+  induction n as [|n'].
+  Case "n = 0".
+    reflexivity.
+  Case "n = S n".
+    simpl. rewrite IHn'. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (plus_swap') *)
@@ -535,7 +564,13 @@ Proof.
 Theorem plus_swap' : forall n m p : nat, 
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  rewrite plus_assoc. rewrite plus_assoc.
+  replace (n + m) with (m + n).
+  reflexivity.
+  Case "replace". rewrite plus_comm. reflexivity.
+Qed.
+  
 (** [] *)
 
 
@@ -552,7 +587,27 @@ Proof.
     wanting to change your original definitions to make the property
     easier to prove, feel free to do so.) *)
 
-(* FILL IN HERE *)
+(* Redefining *)
+Fixpoint bin_to_nat (n : bin) : nat :=
+  match n with
+  | B   => O
+  | T n => (bin_to_nat n) + (bin_to_nat n)
+  | M n => (bin_to_nat n) + (bin_to_nat n) + 1
+  end.
+
+Theorem inc_bin_to_nat_commute:
+  forall (b : bin),
+  bin_to_nat (inc b) = S (bin_to_nat b).
+Proof.
+  induction b as [|b'|b'].
+  Case "b = B". reflexivity.
+  Case "b = M b'".
+    simpl. rewrite IHb'. simpl. replace (S (bin_to_nat b')) with (bin_to_nat b' + 1).
+    rewrite plus_assoc. reflexivity.
+    SCase "rewrite". rewrite plus_comm. reflexivity.
+  Case "b = T b'".
+    simpl. rewrite <- plus_comm. reflexivity.
+Qed.
 (** [] *)
 
 
@@ -580,8 +635,42 @@ Proof.
     Again, feel free to change your earlier definitions if this helps
     here. 
 *)
+Fixpoint nat_to_bin (n : nat) : bin :=
+  match n with
+  | O    => B
+  | S n' => inc (nat_to_bin n')
+  end.
 
-(* FILL IN HERE *)
+Theorem nat_to_bin_bin_to_nat_commute:
+  forall (n : nat),
+  bin_to_nat (nat_to_bin n) = n.
+Proof.
+  induction n as [|n'].
+  Case "n = 0". reflexivity.
+  Case "n = S n'". simpl. rewrite inc_bin_to_nat_commute. rewrite IHn'. reflexivity.
+Qed.
+
+(* (b) There are multiple valid representations of the same nat number in the binary system *)
+(* (c) *)
+Fixpoint normalize_bin (b : bin) : bin :=
+  match b with
+  | B    => B
+  | T b' => match (normalize_bin b') with
+            | B   => B
+            | b'' => T b''
+            end
+  | M b' => M (normalize_bin b')
+  end.
+
+Theorem bin_to_nat_nat_to_bin_normalized_commute:
+  forall (b : bin),
+  nat_to_bin (bin_to_nat b) = normalize_bin b.
+Proof.
+  induction b as [|b'|b'].
+  Case "b = B". reflexivity.
+  Case "b = M b'". simpl.
+(* Give up for now *)
+Admitted.
 (** [] *)
 
 (* ###################################################################### *)

@@ -670,7 +670,7 @@ Proof.
   Case "b = B". reflexivity.
   Case "b = M b'". simpl.
 (* Give up for now *)
-Admitted.
+Admitted. 
 (** [] *)
 
 (* ###################################################################### *)

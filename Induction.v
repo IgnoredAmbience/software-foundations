@@ -1,5 +1,5 @@
 (** * Induction: Proof by Induction *)
- 
+
 
 (** The next line imports all of our definitions from the
     previous chapter. *)
@@ -9,16 +9,16 @@ Require Export Basics.
 (** For it to work, you need to use [coqc] to compile [Basics.v]
     into [Basics.vo].  (This is like making a .class file from a .java
     file, or a .o file from a .c file.)
-  
+
     Here are two ways to compile your code:
-  
+
      - CoqIDE:
-   
+
          Open [Basics.v].
          In the "Compile" menu, click on "Compile Buffer".
-   
+
      - Command line:
-   
+
          Run [coqc Basics.v]
 
     *)
@@ -81,8 +81,8 @@ Proof.
   Case "b = true".  (* <----- here *)
     reflexivity.
   Case "b = false".  (* <---- and here *)
-    rewrite <- H. 
-    reflexivity.  
+    rewrite <- H.
+    reflexivity.
 Qed.
 
 (** [Case] does something very straightforward: It simply adds a
@@ -234,9 +234,9 @@ Proof.
   Case "n = S n'". simpl. rewrite IHn'. reflexivity.
 Qed.
 
-Theorem plus_n_Sm : forall n m : nat, 
+Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
-Proof. 
+Proof.
   intros n m.
   (* Completed in Basics.v for Binary *)
   rewrite <- plus_S_assoc. reflexivity.
@@ -271,7 +271,7 @@ Fixpoint double (n:nat) :=
 (** Use induction to prove this simple fact about [double]: *)
 
 Lemma double_plus : forall n, double n = n + n .
-Proof.  
+Proof.
   intros n. induction n as [|n'].
   Case "n = 0". reflexivity.
   Case "n = S n'". simpl. rewrite <- plus_n_Sm. rewrite IHn'. reflexivity.
@@ -281,7 +281,7 @@ Qed.
 
 (** **** Exercise: 1 star (destruct_induction) *)
 (** Briefly explain the difference between the tactics
-    [destruct] and [induction].  
+    [destruct] and [induction].
 
 Induction introduces an induction hypothesis in addition to performing case analysis.
 
@@ -309,7 +309,7 @@ Theorem mult_0_plus' : forall n m : nat,
   (0 + n) * m = n * m.
 Proof.
   intros n m.
-  assert (H: 0 + n = n). 
+  assert (H: 0 + n = n).
     Case "Proof of assertion". reflexivity.
   rewrite -> H.
   reflexivity.  Qed.
@@ -370,7 +370,7 @@ Proof.
 (** Use [assert] to help prove this theorem.  You shouldn't need to
     use induction. *)
 
-Theorem plus_swap : forall n m p : nat, 
+Theorem plus_swap : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros n m p.
@@ -457,7 +457,7 @@ Proof.
   Case "b = false". reflexivity.
 Qed.
 
-Theorem plus_ble_compat_l : forall n m p : nat, 
+Theorem plus_ble_compat_l : forall n m p : nat,
   ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
 Proof.
   intros n m p H.
@@ -533,14 +533,14 @@ Qed.
 (** **** Exercise: 2 stars, optional (beq_nat_refl) *)
 (** Prove the following theorem.  Putting [true] on the left-hand side
 of the equality may seem odd, but this is how the theorem is stated in
-the standard library, so we follow suit.  Since rewriting 
-works equally well in either direction, we will have no 
+the standard library, so we follow suit.  Since rewriting
+works equally well in either direction, we will have no
 problem using the theorem no matter which way we state it. *)
 
-Theorem beq_nat_refl : forall n : nat, 
+Theorem beq_nat_refl : forall n : nat,
   true = beq_nat n n.
 Proof.
-  
+
   induction n as [|n'].
   Case "n = 0".
     reflexivity.
@@ -555,13 +555,13 @@ Qed.
    [replace (t) with (u)] replaces (all copies of) expression [t] in
    the goal by expression [u], and generates [t = u] as an additional
    subgoal. This is often useful when a plain [rewrite] acts on the wrong
-   part of the goal.  
+   part of the goal.
 
    Use the [replace] tactic to do a proof of [plus_swap'], just like
-   [plus_swap] but without needing [assert (n + m = m + n)]. 
+   [plus_swap] but without needing [assert (n + m = m + n)].
 *)
 
-Theorem plus_swap' : forall n m p : nat, 
+Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros.
@@ -570,7 +570,7 @@ Proof.
   reflexivity.
   Case "replace". rewrite plus_comm. reflexivity.
 Qed.
-  
+
 (** [] *)
 
 
@@ -633,7 +633,7 @@ Qed.
         it.
 
     Again, feel free to change your earlier definitions if this helps
-    here. 
+    here.
 *)
 Fixpoint nat_to_bin (n : nat) : bin :=
   match n with
@@ -670,7 +670,7 @@ Proof.
   Case "b = B". reflexivity.
   Case "b = M b'". simpl.
 (* Give up for now *)
-Admitted. 
+Admitted.
 (** [] *)
 
 (* ###################################################################### *)
@@ -726,7 +726,7 @@ Admitted.
 
 Theorem plus_assoc' : forall n m p : nat,
   n + (m + p) = (n + m) + p.
-Proof. intros n m p. induction n as [| n']. reflexivity. 
+Proof. intros n m p. induction n as [| n']. reflexivity.
   simpl. rewrite -> IHn'. reflexivity.  Qed.
 
 (** Coq is perfectly happy with this as a proof.  For a human,
@@ -740,8 +740,8 @@ Proof. intros n m p. induction n as [| n']. reflexivity.
       n + (m + p) = (n + m) + p.
     _Proof_: By induction on [n].
 
-    - First, suppose [n = 0].  We must show 
-        0 + (m + p) = (0 + m) + p.  
+    - First, suppose [n = 0].  We must show
+        0 + (m + p) = (0 + m) + p.
       This follows directly from the definition of [+].
 
     - Next, suppose [n = S n'], where
@@ -769,9 +769,9 @@ Proof. intros n m p. induction n as [| n']. reflexivity.
 Theorem plus_assoc'' : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  intros n m p. induction n as [| n']. 
+  intros n m p. induction n as [| n'].
   Case "n = 0".
-    reflexivity. 
+    reflexivity.
   Case "n = S n'".
     simpl. rewrite -> IHn'. reflexivity.   Qed.
 
@@ -779,7 +779,7 @@ Proof.
 (** Translate your solution for [plus_comm] into an informal proof. *)
 
 (** Theorem: Addition is commutative.
- 
+
     Proof: (* FILL IN HERE *)
 []
 *)
@@ -788,9 +788,9 @@ Proof.
 (** Write an informal proof of the following theorem, using the
     informal proof of [plus_assoc] as a model.  Don't just
     paraphrase the Coq tactics into English!
- 
+
     Theorem: [true = beq_nat n n] for any [n].
-    
+
     Proof: (* FILL IN HERE *)
 []
  *)

@@ -268,7 +268,8 @@ Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = x :: j ->
      x = y.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j H H0.
+  inversion H0. reflexivity.  Qed.
 (** [] *)
 
 Theorem silly6 : forall (n : nat),
@@ -289,7 +290,8 @@ Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
      y :: l = z :: j ->
      x = z.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x y z l j contra H0.
+  inversion contra. Qed.
 (** [] *)
 
 (** While the injectivity of constructors allows us to reason
@@ -329,12 +331,18 @@ Proof.
 Theorem beq_nat_0_l : forall n,
    beq_nat 0 n = true -> n = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H. destruct n as [|n'].
+  Case "n = 0". reflexivity.
+  Case "n = S n'". inversion H.
+Qed.
 
 Theorem beq_nat_0_r : forall n,
    beq_nat n 0 = true -> n = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H. destruct n as [|n'].
+  Case "n = 0". reflexivity.
+  Case "n = S n'". inversion H.
+Qed.
 (** [] *)
 
 
@@ -399,7 +407,16 @@ Theorem plus_n_n_injective : forall n m,
 Proof.
   intros n. induction n as [| n'].
     (* Hint: use the plus_n_Sm lemma *)
-    (* FILL IN HERE *) Admitted.
+  Case "n = 0". intros m H. simpl in H. destruct m as [|m'].
+    SCase "m = 0". reflexivity.
+    SCase "m = S m'". inversion H.
+  Case "n = S n'".
+  intros m H. destruct m as [|m'].
+    SCase "m = 0". inversion H.
+    SCase "m = S m'". inversion H. rewrite <- plus_n_Sm in H1.
+    rewrite <- plus_n_Sm in H1. inversion H1.
+    apply IHn' in H2. inversion H2. reflexivity.
+Qed.  (* Probably not the quickest way... *)
 (** [] *)
 
 (* ###################################################### *)

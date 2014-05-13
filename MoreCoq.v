@@ -764,24 +764,34 @@ Qed.
 (** **** Exercise: 4 stars, optional (app_length_twice) *)
 (** Prove this by induction on [l], without using app_length. *)
 
+Lemma length_app_cons_sandwiched : forall (X:Type) (l1 l2:list X) (x:X),
+     length (l1 ++ x :: l2) = S (length (l1 ++ l2)).
+Proof.
+  intros. induction l1 as [|v l1'].
+  Case "l1 = []". simpl. reflexivity.
+  Case "l1 = v::l1'". simpl. apply f_equal. apply IHl1'.
+Qed.
+
 Theorem app_length_twice : forall (X:Type) (n:nat) (l:list X),
      length l = n ->
      length (l ++ l) = n + n.
 Proof.
   intros X n l. generalize dependent n.
   induction l as [|x l'].
-  Case "l = []". simpl. intros n H. rewrite <- H. simpl. reflexivity.
+  Case "l = []". simpl. intros n H. rewrite <- H. reflexivity.
   Case "l = x::l'".
-    simpl. intros n' H.
-    destruct n' as [| n].
-    SCase "n' = 0". inversion H. (* absurd *)
-    SCase "n' = S n".
-      rewrite plus_S_assoc.
-      rewrite plus_comm.
-      rewrite plus_S_assoc.
-      apply f_equal.
-Admitted.      (* FIXME: I give up *)
-
+    destruct n as [| n'].
+    SCase "n = 0". intros H. inversion H. (* absurd *)
+    SCase "n = S n'".
+      simpl.
+      intros H.
+      rewrite length_app_cons_sandwiched.
+      rewrite <- plus_n_Sm.
+      apply f_equal. apply f_equal.
+      apply IHl'.
+      inversion H.
+      reflexivity.
+Qed.
 (** [] *)
 
 (* ###################################################### *)

@@ -837,7 +837,10 @@ Proof.
 Theorem override_shadow : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   (override (override f k1 x2) k1 x1) k2 = (override f k1 x1) k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold override. destruct (beq_nat k1 k2).
+  Case "true". reflexivity.
+  Case "false". reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (combine_split) *)
@@ -847,8 +850,13 @@ Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros X Y.
+  induction l as [|v l'].
+  Case "l = []". simpl. intros. inversion H. simpl. reflexivity.
+  Case "l = x::l'".
+    destruct v. simpl. intros. inversion H. simpl. rewrite IHl'. reflexivity.
+    destruct (split l'). simpl. reflexivity.
+Qed.
 
 (** Sometimes, doing a [destruct] on a compound expression (a
     non-variable) will erase information we need to complete a proof. *)
@@ -916,7 +924,18 @@ Theorem bool_fn_applied_thrice :
   forall (f : bool -> bool) (b : bool),
   f (f (f b)) = f b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros f b. destruct b.
+  Case "b = true". destruct (f true) eqn:ft.
+    SCase "f true = true". rewrite ft. apply ft.
+    SCase "f true = false". destruct (f false) eqn:ff.
+      SSCase "f false = true". apply ft.
+      SSCase "f false = false". apply ff.
+  Case "b = false". destruct (f false) eqn:ff.
+    SCase "f false = true". destruct (f true) eqn:ft.
+      SSCase "f true = true". apply ft.
+      SSCase "f true = false". apply ff.
+    SCase "f false = false". rewrite ff. apply ff.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars (override_same) *)
@@ -924,7 +943,11 @@ Theorem override_same : forall (X:Type) x1 k1 k2 (f : nat->X),
   f k1 = x1 ->
   (override f k1 x1) k2 = f k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X x1 k1 k2 f H. unfold override.
+  destruct (beq_nat k1 k2) eqn:eqk.
+  Case "k1=k2". apply beq_nat_true in eqk. rewrite <- eqk. symmetry. apply H.
+  Case "k1/=k2". reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################## *)

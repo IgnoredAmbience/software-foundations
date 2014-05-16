@@ -1076,12 +1076,35 @@ Qed.
     and [l2] for [split] [combine l1 l2 = (l1,l2)] to be true?)  *)
 
 Definition split_combine_statement : Prop :=
-(* FILL IN HERE *) admit.
+  forall X Y (l : list (X * Y)) l1 l2,
+  length l1 = length l2 ->
+  combine l1 l2 = l ->
+  split l = (l1, l2).
 
 Theorem split_combine : split_combine_statement.
 Proof.
-(* FILL IN HERE *) Admitted.
-
+  unfold split_combine_statement.
+  intros X Y.
+  induction l as [|p l'].
+  Case "l = []". simpl. intros.  destruct l1 as [|x l1'].
+    SCase "l1 = []". destruct l2 as [|y l2'].
+      SSCase "l2 = []". reflexivity.
+      SSCase "l2 = y::l2'". simpl in H.  inversion H. (*absurd*)
+    SCase "l1 = x::l1'". destruct l2 as [|y l2'].
+      SSCase "l2 = []". inversion H. (* absurd -- length mismatch *)
+      SSCase "l2 = y::l2'". simpl in H0. inversion H0. (* absurd -- combine to nothing*)
+  Case "l = p::l'". destruct p as [px py].  simpl. intros. destruct l1 as [|x l1'].
+    SCase "l1 = []". inversion H0. (* absurd -- nothing combines to something *)
+    SCase "l1 = x::l1'". destruct l2 as [|y l2'].
+      SSCase "l2 = []". inversion H. (* Absurd length *)
+      SSCase "l2 = y::l2'".
+        simpl in H0. inversion H0. rewrite H4.
+        rewrite IHl' with l1' l2'.
+        simpl.
+        reflexivity.
+        simpl in H. inversion H. reflexivity.
+        apply H4.
+Qed.
 
 (** [] *)
 
@@ -1090,7 +1113,15 @@ Theorem override_permute : forall (X:Type) x1 x2 k1 k2 k3 (f : nat->X),
   beq_nat k2 k1 = false ->
   (override (override f k2 x2) k1 x1) k3 = (override (override f k1 x1) k2 x2) k3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold override. destruct (beq_nat k1 k3) eqn:eq1.
+  Case "k1 = k3". destruct (beq_nat k2 k3) eqn:eq2.
+    SCase "k2 = k3".
+      apply beq_nat_true in eq1. apply beq_nat_true in eq2.
+      rewrite eq1 in H. rewrite eq2 in H.
+      rewrite <- beq_nat_refl in H. inversion H. (* absurd *)
+    SCase "k2 /= k3". reflexivity.
+  Case "k1 /= k3". reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (filter_exercise) *)
@@ -1101,7 +1132,12 @@ Theorem filter_exercise : forall (X : Type) (test : X -> bool)
      filter test l = x :: lf ->
      test x = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction l as [|lx l'].
+  Case "l = []". inversion H. (* absurd *)
+  Case "l = lx::l'". simpl in H. destruct (test lx) eqn:Htest.
+    SCase "test lx = true". inversion H. rewrite <- H1. apply Htest.
+    SCase "test lx = false". apply IHl' in H. apply H.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (forall_exists_challenge) *)
@@ -1130,7 +1166,63 @@ Proof.
     Prove that [existsb'] and [existsb] have the same behavior.
 *)
 
-(* FILL IN HERE *)
+
+Fixpoint forallb {X:Type} (f: X->bool) (l:list X) : bool :=
+  match l with
+  | []      => true
+  | x :: l' => andb (f x) (forallb f l')
+  end.
+
+Fixpoint existsb {X:Type} (f: X->bool) (l:list X) : bool :=
+  match l with
+  | []      => false
+  | x :: l' => orb (f x) (existsb f l')
+  end.
+
+Example test_forallb_1 : forallb oddb [1;3;5;7;9] = true. Proof. reflexivity. Qed.
+Example test_forallb_2 : forallb negb [false;false] = true. Proof. reflexivity. Qed.
+Example test_forallb_3 : forallb evenb [0;2;4;5] = false. Proof. reflexivity. Qed.
+Example test_existsb_1 : existsb (beq_nat 5) [0;2;3;6] = false. Proof. reflexivity. Qed.
+Example test_existsb_2 : existsb (andb true) [true;true;false] = true. Proof. reflexivity. Qed.
+Example test_existsb_3 : existsb oddb [1;0;0;0;0;3] = true. Proof. reflexivity. Qed.
+Example test_existsb_4 : existsb evenb [] = false. Proof. reflexivity. Qed.
+
+Definition existsb' {X:Type} (f: X->bool) (l:list X) : bool :=
+  negb (forallb (fun x => negb (f x)) l).
+
+Lemma negb_andb_orb_de_morgan : forall (p q:bool),
+  negb (andb p q) = orb (negb p) (negb q).
+Proof.
+  destruct p.
+  Case "p". reflexivity.
+  Case "~p". reflexivity.
+Qed.
+
+Theorem existsb_existsb'_equivalent : forall (X:Type) (f:X->bool) (l:list X),
+  existsb f l  = existsb' f l.
+Proof.
+  intros. unfold existsb'. induction l as [|x l'].
+  Case "l = []". simpl. reflexivity.
+  Case "l = x::l'". simpl. destruct (f x) eqn:fx.
+    SCase "(f x) = true". simpl. reflexivity.
+    SCase "(f x) = false". simpl. apply IHl'.
+Qed.
 (** [] *)
+
+Theorem forallb_existsb_duals : forall (X:Type) (f:X->bool) (l:list X),
+  forallb f l = negb (existsb (fun x => negb (f x)) l).
+Proof.
+  induction l as [|x l'].
+  Case "l = []". simpl. reflexivity.
+  Case "l = x::l'". simpl. destruct (f x) eqn:fx.
+    SCase "(f x)". simpl. apply IHl'.
+    SCase "~(f x)". simpl. reflexivity.
+Qed.
+
+Theorem existsb_forallb_duals : forall (X:Type) (f:X->bool) (l:list X),
+  existsb f l = negb (forallb (fun x => negb (f x)) l).
+Proof.
+  intros. fold (existsb' f l). apply existsb_existsb'_equivalent.
+Qed.
 
 (* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)

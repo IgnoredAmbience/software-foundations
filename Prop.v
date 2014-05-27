@@ -293,7 +293,18 @@ Theorem g_times2: forall n, gorgeous n -> gorgeous (2*n).
 Proof.
    intros n H. simpl.
    induction H.
-
+   Case "g_0". simpl. apply g_0.
+   Case "g_plus3". apply g_plus3. fold plus.
+                   rewrite helper_g_times2.
+                   apply g_plus3. fold plus.
+                   rewrite <- plus_assoc.
+                   apply IHgorgeous.
+   Case "g_plus5". apply g_plus5. fold plus.
+                   rewrite helper_g_times2.
+                   apply g_plus5. fold plus.
+                   rewrite <- plus_assoc.
+                   apply IHgorgeous.
+Qed.
 (** [] *)
 
 
@@ -338,7 +349,11 @@ Inductive ev : nat -> Prop :=
 Theorem double_even : forall n,
   ev (double n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction n.
+  Case "n=0". simpl. apply ev_0.
+  Case "n=Sn". simpl. apply ev_SS. apply IHn.
+Qed.
 (** [] *)
 
 
@@ -390,8 +405,7 @@ Qed.
 
 (** Could this proof also be carried out by induction on [n] instead
     of [E]?  If not, why not? *)
-
-(* FILL IN HERE *)
+(** Unable to prove the case (S n') by induction -- no rule for this case *)
 (** [] *)
 
 (** The induction principle for inductively defined propositions does
@@ -414,7 +428,7 @@ Qed.
    Intuitively, we expect the proof to fail because not every
    number is even. However, what exactly causes the proof to fail?
 
-(* FILL IN HERE *)
+There's no rule of ev to match the case ev (S n), attempts to apply won't unify.
 *)
 (** [] *)
 
@@ -424,7 +438,10 @@ Qed.
 Theorem ev_sum : forall n m,
    ev n -> ev m -> ev (n+m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m E F. induction E.
+  Case "E = ev_0". simpl. apply F.
+  Case "E = ev_SS". simpl. apply ev_SS. apply IHE.
+Qed.
 (** [] *)
 
 
@@ -447,7 +464,11 @@ Proof.
 (** **** Exercise: 1 star, optional (ev_minus2_n) *)
 (** What happens if we try to use [destruct] on [n] instead of [inversion] on [E]? *)
 
-(* FILL IN HERE *)
+(** Destruct on n would be stupid, and fail, but
+The proof is identical if we destruct on E...
+  destruct E as [| n' E'].
+  Case "E = ev_0". simpl. apply ev_0.
+  Case "E = ev_SS". simpl. apply E'. Qed. *)
 (** [] *)
 
 
@@ -497,7 +518,7 @@ Proof.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n H. inversion H. inversion H1. apply H3. Qed.
 
 (** The [inversion] tactic can also be used to derive goals by showing
     the absurdity of a hypothesis. *)
@@ -505,7 +526,7 @@ Proof.
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros H. inversion H. inversion H1. inversion H3. Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (ev_ev__ev) *)
@@ -515,7 +536,10 @@ Proof.
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m E F. induction F.
+  Case "F = ev_0". simpl in E. apply E.
+  Case "F = ev_SS". inversion E. apply IHF. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus) *)
@@ -526,12 +550,13 @@ Proof.
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m p E.
+  apply ev_ev__ev.
+  rewrite plus_swap. rewrite <- plus_assoc. rewrite plus_assoc.
+  apply ev_sum. rewrite plus_comm. apply E.
+  rewrite <- double_plus. apply double_even.
+Qed.
 (** [] *)
-
-
-
-
 
 (* ####################################################### *)
 (** * Additional Exercises *)

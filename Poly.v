@@ -425,6 +425,11 @@ Proof.
 Qed.
 (** [] *)
 
+Theorem cons_app_assoc : forall X (l1 l2:list X) x,
+  (x :: l1) ++ l2 = x :: (l1 ++ l2).
+Proof.
+  intros. reflexivity. Qed.
+
 (* ###################################################### *)
 (** ** Polymorphic Pairs *)
 

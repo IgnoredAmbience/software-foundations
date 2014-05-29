@@ -582,7 +582,7 @@ Qed.
 Inductive pal {X:Type} : list X -> Prop :=
   pal_nil  : pal [ ]
 | pal_sing : forall x, pal [x]
-| pal_rec  : forall l x, pal l -> pal (x :: (l ++ [x])).
+| pal_rec  : forall l x, pal l -> pal (x :: l ++ [x]).
 
 Theorem pal_app_rev : forall (X:Type) (l : list X),
   pal (l ++ rev l).
@@ -596,11 +596,6 @@ Proof.
     apply IHl'.
 Qed.
 
-Theorem cons_app_comm : forall X (l1 l2:list X) x,
-  (x :: l1) ++ l2 = x :: (l1 ++ l2).
-Proof.
-  intros. reflexivity. Qed.
-
 Theorem pal_rev : forall X (l:list X),
   pal l -> l = rev l.
 Proof.
@@ -609,7 +604,7 @@ Proof.
   Case "pal []". reflexivity.
   Case "pal [x]". reflexivity.
   Case "pal_rec".
-    rewrite <- cons_app_comm.
+    rewrite <- cons_app_assoc.
     rewrite <- rev_app. simpl.
     rewrite <- IHpal.
     rewrite snoc_append.
@@ -623,13 +618,100 @@ Qed.
      forall l, l = rev l -> pal l.
 *)
 
+Theorem app_assoc : forall X (l1 l2 l3:list X),
+  (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+  intros. induction l1.
+  Case "[]". reflexivity.
+  Case "l1=x::l1'". simpl. rewrite IHl1. reflexivity.
+Qed.
+
+Theorem app_singletons : forall X (x y : X),
+  [x;y] = [x] ++ [y].
+Proof. reflexivity. Qed.
+
+Theorem nil_app_after : forall X (l : list X),
+  l ++ [] = l.
+Proof. induction l. reflexivity. simpl. rewrite IHl. reflexivity. Qed.
+
+Lemma cons_app_head : forall X (l : list X) x,
+  x :: l = [x] ++ l.
+Proof. reflexivity. Qed.
+
+Theorem length_app_dist : forall X (l1 l2 : list X),
+  length (l1 ++ l2) = length l1 + length l2.
+Proof. intros. induction l1. reflexivity. simpl. rewrite IHl1. reflexivity. Qed.
+
+Theorem plus_injective : forall (n m o : nat),
+  n + m = n + o -> m = o.
+Proof. induction n. simpl. intros.  apply H. simpl. intros. inversion H. apply IHn. apply H1. Qed.
+
+Lemma list_append_length_contra : forall X x (l1 l2 : list X),
+  l1 = (x::l2) ++ l1 -> 1 = 0.
+Proof.
+  intros. apply f_equal with (f:=length) in H.
+  simpl in H. rewrite length_app_dist in H.
+  rewrite <- plus_1_l in H. rewrite plus_comm in H. rewrite <- plus_assoc in H. rewrite plus_comm in H.
+  symmetry in H. rewrite <- plus_0_r in H. rewrite <- plus_assoc in H.
+  apply plus_injective with (n:=length l1) (m:=1 + length l2) (o:=0) in H.
+  inversion H.
+Qed.
+
+Theorem app_injective : forall X (l1 l2 l : list X),
+  l1 ++ l = l2 ++ l -> l1 = l2.
+Proof.
+  induction l1. induction l2.
+  Case "l1=[]".
+    SCase "l2=[]". reflexivity.
+    SCase "l2=::". intros. simpl in H. apply list_append_length_contra in H. inversion H.
+  Case "l1=::". induction l2.
+    SCase "l2=[]". simpl. intros. symmetry in H. apply list_append_length_contra in H. inversion H.
+    SCase "l2=::".
+      intros. inversion H. apply IHl1 in H2. rewrite H2. reflexivity.
+Qed.
+
+Lemma length_0 : forall X (l : list X),
+  length l = 0 -> l = [].
+Proof. intros. destruct l. reflexivity. inversion H. Qed.
+
 Theorem palindrome_converse : forall X (l:list X),
   l = rev l -> pal l.
 Proof.
-  intros X l H. induction l as [|x l'].
+  intros X l E.
+  induction l as [|x l'].
   Case "l=[]". apply pal_nil.
-  Case "l=x::l'".
-    simpl in H. rewrite snoc_append in H.
+  Case "l=x::l'". destruct l' as [|y l''].
+  SCase "l=[x]". apply pal_sing.
+  SCase "l=x::y::l''".
+    simpl in H. rewrite snoc_append in H. rewrite snoc_append in H.
+    rewrite app_assoc in H. simpl in H.
+    destruct (rev l'') as [|z l3] eqn:L2.
+    SSCase "[]".
+      simpl in H. inversion H. assert ([y] = [] ++ [y]) as A. reflexivity. rewrite A. apply pal_rec. apply pal_nil.
+    SSCase "rev l''=x0::l".
+      inversion H. rewrite H2.
+      apply f_equal with (f:=rev) in L2. rewrite rev_involutive in L2. rewrite L2 in H2. simpl in H2. rewrite snoc_append in H2.
+      rewrite app_singletons in H2.
+      rewrite <- app_assoc in H2. rewrite <- cons_app_assoc in H2.
+      apply app_injective with (l2:=l3 ++ [y]) (l:=[z]) in H2.
+      destruct l3 as [|z' l4] eqn:L3.
+      SSSCase  "l3=[]".
+        simpl. rewrite app_singletons. apply pal_rec. apply pal_sing.
+      SSSCase "l3=::".
+        simpl. inversion H2. rewrite snoc_append in H4. apply app_injective in H4.
+        rewrite app_singletons. rewrite <- app_assoc. rewrite <- cons_app_assoc. apply pal_rec.
+        apply pal_rec.
+        (* consistent names please *)
+        symmetry in H3. rewrite H3 in H2. rewrite H3 in H. rewrite H3 in L2.
+        (* tidy up the ind hyp *)
+        rewrite L2 in IHl'. simpl in IHl'. rewrite ?snoc_append in IHl'. rewrite ?app_assoc in IHl'.
+        rewrite <- ?app_singletons in IHl'.
+Abort.
+(** Bad induction hypothesis, requires y :: rev l4 ++ [y;z] = z :: y :: l4 ++ [y]
+    Note z is flipped from one end to the other.
+    This is because the inductive step fails to require that the list has the form x :: l' ++ [x]
+    If I could use pal as the inductive step, then things would be great...
+*)
 
 (** [] *)
 

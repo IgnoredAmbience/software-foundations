@@ -393,6 +393,14 @@ Proof.
   Case "l = v::l'". simpl. rewrite rev_snoc. rewrite IHl'. reflexivity.
 Qed.
 
+Theorem snoc_append : forall X (l:list X) x,
+  snoc l x = l ++ [x].
+Proof.
+  intros X l x. induction l as [|y l'].
+  Case "l=[]". reflexivity.
+  Case "l=y::l'". simpl. rewrite IHl'. reflexivity.
+Qed.
+
 Theorem snoc_with_append : forall X : Type,
                          forall l1 l2 : list X,
                          forall v : X,
@@ -401,6 +409,19 @@ Proof.
   intros X l1 l2 v. induction l1 as [|x l'].
   Case "l1 = []". simpl. reflexivity.
   Case "l1=x::l'". simpl. rewrite IHl'. reflexivity.
+Qed.
+
+Theorem rev_app : forall X (l:list X) x,
+  x :: rev l = rev (l ++ [x]).
+Proof.
+  intros X l. induction l as [|y l'].
+  Case "l=[]". simpl. reflexivity.
+  Case "l=y::l'". intros. simpl.
+    rewrite snoc_append.
+    rewrite <- IHl'.
+    simpl.
+    rewrite snoc_append.
+    reflexivity.
 Qed.
 (** [] *)
 

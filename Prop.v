@@ -579,7 +579,42 @@ Qed.
 *)
 
 
-(* FILL IN HERE *)
+Inductive pal {X:Type} : list X -> Prop :=
+  pal_nil  : pal [ ]
+| pal_sing : forall x, pal [x]
+| pal_rec  : forall l x, pal l -> pal (x :: (l ++ [x])).
+
+Theorem pal_app_rev : forall (X:Type) (l : list X),
+  pal (l ++ rev l).
+Proof.
+  intros. induction l as [|x l'].
+  Case "l=[]". simpl. apply pal_nil.
+  Case "l=x::l'". simpl.
+    rewrite <- snoc_with_append.
+    rewrite snoc_append.
+    apply pal_rec.
+    apply IHl'.
+Qed.
+
+Theorem cons_app_comm : forall X (l1 l2:list X) x,
+  (x :: l1) ++ l2 = x :: (l1 ++ l2).
+Proof.
+  intros. reflexivity. Qed.
+
+Theorem pal_rev : forall X (l:list X),
+  pal l -> l = rev l.
+Proof.
+  intros X l H.
+  induction H.
+  Case "pal []". reflexivity.
+  Case "pal [x]". reflexivity.
+  Case "pal_rec".
+    rewrite <- cons_app_comm.
+    rewrite <- rev_app. simpl.
+    rewrite <- IHpal.
+    rewrite snoc_append.
+    reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (palindrome_converse) *)
@@ -588,7 +623,14 @@ Qed.
      forall l, l = rev l -> pal l.
 *)
 
-(* FILL IN HERE *)
+Theorem palindrome_converse : forall X (l:list X),
+  l = rev l -> pal l.
+Proof.
+  intros X l H. induction l as [|x l'].
+  Case "l=[]". apply pal_nil.
+  Case "l=x::l'".
+    simpl in H. rewrite snoc_append in H.
+
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (subsequence) *)

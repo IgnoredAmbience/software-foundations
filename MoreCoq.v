@@ -844,7 +844,15 @@ Theorem double_induction: forall (P : nat -> nat -> Prop),
   (forall m n, P m n -> P (S m) (S n)) ->
   forall m n, P m n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P P00 Pm0 P0n Pmn.
+  induction m as [|m'].
+  Case "m = 0". induction n as [|n'].
+    SCase "n = 0". apply P00.
+    SCase "n = Sn'". apply P0n. apply IHn'.
+  Case "m = Sm'". induction n as [|n'].
+    SCase "n = 0". apply Pm0. apply IHm'.
+    SCase "n = Sn'". apply Pmn. apply IHm'.
+Qed. 
 (** [] *)
 
 

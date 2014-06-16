@@ -326,7 +326,7 @@
 (** Coq runs on Windows, Linux, and OS X.  You will need:
 
        - A current installation of Coq, available from the Coq home
-         page.  Everything should work with patch level of version 8.4.
+         page.  Everything should work with version 8.4.
 
        - An IDE for interacting with Coq.  Currently, there are two
          choices:
@@ -408,5 +408,5 @@
       - http://proofcafe.org/sf
 *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+(* $Date: 2014-06-05 07:22:21 -0400 (Thu, 05 Jun 2014) $ *)
 

@@ -1,8 +1,15 @@
 (** * Basics: Functional Programming in Coq *)
 
-(* This library definition is included here temporarily
-   for backward compatibility with Coq 8.3.
-   Please ignore. *)
+(*
+   [Admitted] is Coq's "escape hatch" that says accept this definition
+   without proof.  We use it to mark the 'holes' in the development
+   that should be completed as part of your homework exercises.  In
+   practice, [Admitted] is useful when you're incrementally developing
+   large proofs.
+
+   As of Coq 8.4 [admit] is in the standard library, but we include
+   it here for backwards compatibility.
+*)
 Definition admit {T: Type} : T.  Admitted.
 
 (* ###################################################################### *)
@@ -373,7 +380,7 @@ Definition minustwo (n : nat) : nat :=
     prints numbers in arabic form by default: *)
 
 Check (S (S (S (S O)))).
-Eval simpl in (minustwo 4).
+Eval compute in (minustwo 4).
 
 (** The constructor [S] has the type [nat -> nat], just like the
     functions [minustwo] and [pred]: *)
@@ -427,7 +434,7 @@ Fixpoint plus (n : nat) (m : nat) : nat :=
 
 (** Adding three to two now gives us five, as we'd expect. *)
 
-Eval simpl in (plus (S (S (S O))) (S (S O))).
+Eval compute in (plus (S (S (S O))) (S (S O))).
 
 (** The simplification that Coq performs to reach this conclusion can
     be visualized as follows: *)
@@ -595,8 +602,8 @@ Proof. reflexivity. Qed.
     to check that both sides of the [=] simplify to identical values.
 
     (By the way, it will be useful later to know that
-    [reflexivity] actually does somewhat more than [simpl] -- for
-    example, it tries "unfolding" defined terms, replacing them with
+    [reflexivity] actually does somewhat more simplification than [simpl]
+    does -- for example, it tries "unfolding" defined terms, replacing them with
     their right-hand sides.  The reason for this difference is that,
     when reflexivity succeeds, the whole goal is finished and we don't
     need to look at whatever expanded expressions [reflexivity] has
@@ -624,8 +631,8 @@ Proof.
 (** The form of this theorem and proof are almost exactly the
     same as the examples above; there are just a few differences.
 
-    First, we've used the keyword keyword [Theorem] instead of
-    [Example].  Indeed, the latter difference is purely a matter of
+    First, we've used the keyword [Theorem] instead of
+    [Example].  Indeed, the difference is purely a matter of
     style; the keywords [Example] and [Theorem] (and a few others,
     including [Lemma], [Fact], and [Remark]) mean exactly the same
     thing to Coq.
@@ -876,7 +883,8 @@ Proof.
 
 (** **** Exercise: 2 stars (andb_eq_orb) *)
 (** Prove the following theorem.  (You may want to first prove a
-    subsidiary lemma or two.) *)
+    subsidiary lemma or two. Alternatively, remember that you do
+    not have to introduce all hypotheses at the same time.) *)
 
 Theorem andb_eq_orb :
   forall (b c : bool),
@@ -1135,4 +1143,4 @@ Fixpoint ackermann (m n : nat) {struct n} : nat :=
 
 (** [] *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+(* $Date: 2013-12-03 07:45:41 -0500 (Tue, 03 Dec 2013) $ *)

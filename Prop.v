@@ -747,15 +747,30 @@ Abort.
     - Define an inductive proposition [subseq] on [list nat] that
       captures what it means to be a subsequence. (Hint: You'll need
       three cases.)
+*)
+Inductive subseq : list nat -> list nat -> Prop :=
+  subseq_nil   : forall l, subseq [] l
+| subseq_match : forall n l l', subseq l l' -> subseq (n :: l) (n :: l')
+| subseq_else  : forall m n l l', subseq (n::l) l' -> subseq (n :: l) (m :: l').
 
-    - Prove that subsequence is reflexive, that is, any list is a
+Example subseq_test1 : subseq [1;2;3] [1;2;3].
+Proof. apply subseq_match. apply subseq_match. apply subseq_match. apply subseq_nil. Qed.
+
+Example subseq_test2 : subseq [1;2;3] [1;1;2;2;3].
+Proof. apply subseq_else. apply subseq_match. apply subseq_match. apply subseq_else. apply subseq_match. apply subseq_nil. Qed.
+
+Example subseq_test3 :
+
+(** - Prove that subsequence is reflexive, that is, any list is a
       subsequence of itself.
+*)
 
-    - Prove that for any lists [l1], [l2], and [l3], if [l1] is a
+(** - Prove that for any lists [l1], [l2], and [l3], if [l1] is a
       subsequence of [l2], then [l1] is also a subsequence of [l2 ++
       l3].
+*)
 
-    - (Optional, harder) Prove that subsequence is transitive -- that
+(** - (Optional, harder) Prove that subsequence is transitive -- that
       is, if [l1] is a subsequence of [l2] and [l2] is a subsequence
       of [l3], then [l1] is a subsequence of [l3].  Hint: choose your
       induction carefully!
@@ -791,7 +806,7 @@ Abort.
     thought of as a _relation_ -- i.e., it defines a set of pairs for
     which the proposition is provable. *)
 
-Module LeModule.  
+Module LeModule.
 
 
 (** One useful example is the "less than or equal to"
@@ -839,7 +854,7 @@ Proof.
 
 Theorem test_le3 :
   (2 <= 1) -> 2 + 2 = 5.
-Proof. 
+Proof.
   (* WORKED IN CLASS *)
   intros H. inversion H. inversion H2.  Qed.
 
@@ -895,26 +910,26 @@ Proof.
 
 Theorem n_le_m__Sn_le_Sm : forall n m,
   n <= m -> S n <= S m.
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
 
 
 Theorem Sn_le_Sm__n_le_m : forall n m,
   S n <= S m -> n <= m.
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
 
 
 Theorem le_plus_l : forall a b,
   a <= a + b.
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
-Proof. 
- unfold lt. 
+Proof.
+ unfold lt.
  (* FILL IN HERE *) Admitted.
 
 Theorem lt_S : forall n m,
@@ -925,7 +940,7 @@ Proof.
 
 Theorem ble_nat_true : forall n m,
   ble_nat n m = true -> n <= m.
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem le_ble_nat : forall n m,
@@ -936,7 +951,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem ble_nat_true_trans : forall n m o,
-  ble_nat n m = true -> ble_nat m o = true -> ble_nat n o = true.                               
+  ble_nat n m = true -> ble_nat m o = true -> ble_nat n o = true.
 Proof.
   (* Hint: This theorem can be easily proved without using [induction]. *)
   (* FILL IN HERE *) Admitted.
@@ -956,7 +971,7 @@ Module R.
     consider the following three-place relation on numbers: *)
 
 Inductive R : nat -> nat -> nat -> Prop :=
-   | c1 : R 0 0 0 
+   | c1 : R 0 0 0
    | c2 : forall m n o, R m n o -> R (S m) n (S o)
    | c3 : forall m n o, R m n o -> R m (S n) (S o)
    | c4 : forall m n o, R (S m) (S n) (S (S o)) -> R m n o
@@ -969,7 +984,7 @@ Inductive R : nat -> nat -> nat -> Prop :=
     - If we dropped constructor [c5] from the definition of [R],
       would the set of provable propositions change?  Briefly (1
       sentence) explain your answer.
-  
+
     - If we dropped constructor [c4] from the definition of [R],
       would the set of provable propositions change?  Briefly (1
       sentence) explain your answer.
@@ -978,9 +993,9 @@ Inductive R : nat -> nat -> nat -> Prop :=
 []
 *)
 
-(** **** Exercise: 3 stars, optional (R_fact) *)  
+(** **** Exercise: 3 stars, optional (R_fact) *)
 (** Relation [R] actually encodes a familiar function.  State and prove two
-    theorems that formally connects the relation and the function. 
+    theorems that formally connects the relation and the function.
     That is, if [R m n o] is true, what can we say about [m],
     [n], and [o], and vice versa?
 *)
@@ -1025,7 +1040,7 @@ Check (beautiful 4).
 (** We've mainly seen one place that propositions can appear in Coq: in
     [Theorem] (and [Lemma] and [Example]) declarations. *)
 
-Theorem plus_2_2_is_4 : 
+Theorem plus_2_2_is_4 :
   2 + 2 = 4.
 Proof. reflexivity.  Qed.
 
@@ -1040,12 +1055,12 @@ Check plus_fact.
 (** We can later use this name in any situation where a proposition is
     expected -- for example, as the claim in a [Theorem] declaration. *)
 
-Theorem plus_fact_is_true : 
+Theorem plus_fact_is_true :
   plus_fact.
 Proof. reflexivity.  Qed.
 
 (** *** *)
-(** We've seen several ways of constructing propositions.  
+(** We've seen several ways of constructing propositions.
 
        - We can define a new proposition primitively using [Inductive].
 
@@ -1063,7 +1078,7 @@ Check (even 4).
 (* ===> even 4 : Prop *)
 Check (even 3).
 (* ===> even 3 : Prop *)
-Check even. 
+Check even.
 (* ===> even : nat -> Prop *)
 
 (** *** *)
@@ -1091,7 +1106,7 @@ Definition true_for_zero (P:nat->Prop) : Prop :=
 
 (** *** *)
 (** Here are two more examples of passing parameterized propositions
-    as arguments to a function.  
+    as arguments to a function.
 
     The first function, [true_for_all_numbers], takes a proposition
     [P] as argument and builds the proposition that [P] is true for
@@ -1115,8 +1130,8 @@ a proposition stating that induction is valid for natural numbers: *)
 Definition natural_number_induction_valid : Prop :=
   forall (P:nat->Prop),
     true_for_zero P ->
-    preserved_by_S P -> 
-    true_for_all_numbers P. 
+    preserved_by_S P ->
+    true_for_all_numbers P.
 
 
 
@@ -1135,7 +1150,7 @@ Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
 (** To test your definition, see whether you can prove the following
     facts: *)
 
-Theorem combine_odd_even_intro : 
+Theorem combine_odd_even_intro :
   forall (Podd Peven : nat -> Prop) (n : nat),
     (oddb n = true -> Podd n) ->
     (oddb n = false -> Peven n) ->
@@ -1174,7 +1189,7 @@ Proof.
     [true_upto_n__true_everywhere] that makes
     [true_upto_n_example] work. *)
 
-(* 
+(*
 Fixpoint true_upto_n__true_everywhere
 (* FILL IN HERE *)
 
@@ -1187,5 +1202,3 @@ Proof. reflexivity.  Qed.
 
 
 (* $Date: 2014-06-05 07:22:21 -0400 (Thu, 05 Jun 2014) $ *)
-
-

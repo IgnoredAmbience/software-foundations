@@ -759,16 +759,30 @@ Proof. apply subseq_match. apply subseq_match. apply subseq_match. apply subseq_
 Example subseq_test2 : subseq [1;2;3] [1;1;2;2;3].
 Proof. apply subseq_else. apply subseq_match. apply subseq_match. apply subseq_else. apply subseq_match. apply subseq_nil. Qed.
 
-Example subseq_test3 :
-
 (** - Prove that subsequence is reflexive, that is, any list is a
       subsequence of itself.
 *)
+
+Theorem subseq_refl : forall (l : list nat), subseq l l.
+Proof.
+  induction l.
+  apply subseq_nil.
+  apply subseq_match. apply IHl.
+Qed.
 
 (** - Prove that for any lists [l1], [l2], and [l3], if [l1] is a
       subsequence of [l2], then [l1] is also a subsequence of [l2 ++
       l3].
 *)
+
+Theorem subseq_extends : forall (l1 l2 l3 : list nat),
+  subseq l1 l2 -> subseq l1 (l2 ++ l3).
+Proof.
+  intros l1 l2 l3 H. induction H.
+  apply subseq_nil.
+  simpl. apply subseq_match. apply IHsubseq.
+  simpl. apply subseq_else. apply IHsubseq.
+Qed.
 
 (** - (Optional, harder) Prove that subsequence is transitive -- that
       is, if [l1] is a subsequence of [l2] and [l2] is a subsequence
@@ -776,22 +790,50 @@ Example subseq_test3 :
       induction carefully!
 *)
 
-(* FILL IN HERE *)
+Theorem subseq_trans : forall l1 l2 l3,
+  subseq l1 l2 -> subseq l2 l3 -> subseq l1 l3.
+Proof.
+  intros l1 l2 l3. generalize dependent l1.  generalize dependent l2.
+  induction l3.
+  Case "l3=[]". intros. inversion H0; inversion H; subst.
+    apply subseq_nil.
+    inversion H5. (* contra *)
+    inversion H5. (* contra *)
+  Case "l3=x::l3".  intros. inversion H0.
+    SCase "l2=[]". subst. inversion H. apply H0.
+    subst. inversion H.
+      apply subseq_nil.
+      apply subseq_match. apply IHl3 with (l2:=l). apply H4. apply H3.
+      apply subseq_else. apply IHl3 with (l2:=l). apply H4. apply H3.
+    subst. inversion H.
+      apply subseq_nil.
+      subst. apply subseq_else. apply IHl3 with (l2:=(n::l)). apply H. apply H3.
+      subst. apply subseq_else. apply IHl3 with (l2:=(n::l)). apply H. apply H3.
+Qed.
+(* Phew! *)
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (R_provability) *)
 (** Suppose we give Coq the following definition:
-    Inductive R : nat -> list nat -> Prop :=
-      | c1 : R 0 []
-      | c2 : forall n l, R n l -> R (S n) (n :: l)
-      | c3 : forall n l, R (S n) l -> R n l.
+*)
+Inductive R : nat -> list nat -> Prop :=
+| c1 : R 0 []
+| c2 : forall n l, R n l -> R (S n) (n :: l)
+| c3 : forall n l, R (S n) l -> R n l.
+(*
     Which of the following propositions are provable?
 
     - [R 2 [1,0]]
+      yes
     - [R 1 [1,2,1,0]]
+      yes
     - [R 6 [3,2,1,0]]
+      no
 *)
-
+Theorem r_1 : R 2 [1;0]. repeat constructor. Qed.
+Theorem r_2 : R 1 [1;2;1;0]. repeat constructor. Qed.
+Theorem r_3 : R 6 [3;2;1;0]. Abort.
 (** [] *)
 
 
@@ -884,14 +926,15 @@ Inductive next_even (n:nat) : nat -> Prop :=
 (** Define an inductive binary relation [total_relation] that holds
     between every pair of natural numbers. *)
 
-(* FILL IN HERE *)
+Inductive total_relation : nat -> nat -> Prop :=
+  | tr : forall n m:nat, total_relation n m.
 (** [] *)
 
 (** **** Exercise: 2 stars (empty_relation) *)
 (** Define an inductive binary relation [empty_relation] (on numbers)
     that never holds. *)
 
-(* FILL IN HERE *)
+Inductive empty_relation : nat -> Prop := .
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (le_exercises) *)
@@ -901,66 +944,112 @@ Inductive next_even (n:nat) : nat -> Prop :=
 
 Lemma le_trans : forall m n o, m <= n -> n <= o -> m <= o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction H0.
+  Case "m=n". apply H.
+  Case "Sm0=n". apply le_S. apply IHle.
+Qed.
 
 Theorem O_le_n : forall n,
   0 <= n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction n. apply le_n. apply le_S. apply IHn. Qed.
 
 Theorem n_le_m__Sn_le_Sm : forall n m,
   n <= m -> S n <= S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. induction H.
+  Case "n=m". apply le_n.
+  Case "Sm0=m". apply le_S. apply IHle.
+Qed.
 
 
 Theorem Sn_le_Sm__n_le_m : forall n m,
   S n <= S m -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction m,n; intros.
+  apply O_le_n.
+  inversion H. inversion H1.
+  apply O_le_n.
+  inversion H. apply le_n.
+  subst. apply le_S. apply IHm. apply H1.
+Qed.
 
 
 Theorem le_plus_l : forall a b,
   a <= a + b.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction b.
+  rewrite plus_0_r. apply le_n.
+  rewrite plus_S_assoc. apply le_S. apply IHb.
+Qed.
 
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof.
- unfold lt.
- (* FILL IN HERE *) Admitted.
+  unfold lt. intros. split; induction H.
+  rewrite <- plus_comm. rewrite <- plus_S_assoc. rewrite plus_comm. apply le_plus_l.
+  apply le_S. apply IHle.
+  rewrite <- plus_S_assoc. rewrite plus_comm. apply le_plus_l.
+  apply le_S. apply IHle.
+Qed.
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold lt. intros. apply le_S. apply H.
+Qed.
 
 Theorem ble_nat_true : forall n m,
   ble_nat n m = true -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n; intros.
+  Case "n=0". apply O_le_n.
+  Case "n=Sn". destruct m.
+    SCase "m=0". inversion H. (* absurd *)
+    SCase "m=Sm". apply n_le_m__Sn_le_Sm. apply IHn. simpl in H. apply H.
+Qed.
+
+Lemma ble_nat_Sl : forall n m,
+  ble_nat m n = true -> ble_nat m (S n) = true.
+Proof.
+  induction n; intros.
+  Case "n=0". destruct m.
+    SCase "m=0". reflexivity.
+    SCase "m=Sm". simpl in H. inversion H. (* contra *)
+  Case "n=Sn". destruct m.
+    SCase "m=0". reflexivity.
+    SCase "m=Sm". simpl. apply IHn. simpl in H. apply H.
+ Qed.
 
 Theorem le_ble_nat : forall n m,
   n <= m ->
   ble_nat n m = true.
 Proof.
-  (* Hint: This may be easiest to prove by induction on [m]. *)
-  (* FILL IN HERE *) Admitted.
+  intros n m. generalize dependent n. induction m; intros.
+  Case "m=0". destruct n.
+    SCase "n=0". reflexivity.
+    SCase "n=Sn". inversion H. (* absurd *)
+  Case "m=Sm". inversion H.
+    SCase "n=Sm". symmetry. apply ble_nat_refl.
+    SCase "n<=m". apply IHm in H1. apply ble_nat_Sl. apply H1.
+Qed.
 
 Theorem ble_nat_true_trans : forall n m o,
   ble_nat n m = true -> ble_nat m o = true -> ble_nat n o = true.
 Proof.
-  (* Hint: This theorem can be easily proved without using [induction]. *)
-  (* FILL IN HERE *) Admitted.
+  intros.
+  apply le_ble_nat. apply ble_nat_true in H. apply ble_nat_true in H0.
+  apply le_trans with (m:=n) (n:=m). apply H. apply H0.
+Qed.
 
 (** **** Exercise: 2 stars, optional (ble_nat_false) *)
 Theorem ble_nat_false : forall n m,
   ble_nat n m = false -> ~(n <= m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not. intros. apply le_ble_nat in H0. rewrite H0 in H. inversion H.
+Qed.
 (** [] *)
 
 
@@ -979,17 +1068,22 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 (** - Which of the following propositions are provable?
       - [R 1 1 2]
+        Yes, c1 c3 c2.
       - [R 2 2 6]
+        No?
 
     - If we dropped constructor [c5] from the definition of [R],
       would the set of provable propositions change?  Briefly (1
       sentence) explain your answer.
 
+      No, c2 and c3 permit adjustment of one of the first two params
+      respectively, c4 operates same on both. All acions can be performed by all.
+
     - If we dropped constructor [c4] from the definition of [R],
       would the set of provable propositions change?  Briefly (1
       sentence) explain your answer.
 
-(* FILL IN HERE *)
+      I don't think so. c2.c3 and c3.c2 equiv to opposite of c4.
 []
 *)
 
@@ -998,9 +1092,32 @@ Inductive R : nat -> nat -> nat -> Prop :=
     theorems that formally connects the relation and the function.
     That is, if [R m n o] is true, what can we say about [m],
     [n], and [o], and vice versa?
+
+    Addition
 *)
 
-(* FILL IN HERE *)
+Theorem R_plus : forall m n o,
+  R m n o -> m + n = o.
+Proof.
+  intros. induction H.
+  Case "c1". reflexivity.
+  Case "c2". simpl. rewrite IHR. reflexivity.
+  Case "c3". rewrite plus_S_assoc. rewrite IHR. reflexivity.
+  Case "c4". rewrite plus_S_assoc in IHR. simpl in IHR. inversion IHR. reflexivity.
+  Case "c5". rewrite plus_comm. apply IHR.
+Qed.
+
+Theorem plus_R : forall o m n,
+  m + n = o -> R m n o.
+Proof.
+  induction o; intros; destruct m; simpl in H.
+  Case "o=0".
+    SCase "m=0". rewrite H. apply c1.
+    SCase "m=Sm". inversion H. (* contra *)
+  Case "o=So".
+    SCase "m=0". rewrite H. apply c3. apply IHo. reflexivity.
+    SCase "m=Sm". apply c2. apply IHo. simpl in H. inversion H. reflexivity.
+Qed.
 (** [] *)
 
 End R.
@@ -1145,7 +1262,7 @@ Definition natural_number_induction_valid : Prop :=
     equivalent to [Peven n] otherwise. *)
 
 Definition combine_odd_even (Podd Peven : nat -> Prop) : nat -> Prop :=
-  (* FILL IN HERE *) admit.
+  fun n => if (oddb n) then Podd n else Peven n.
 
 (** To test your definition, see whether you can prove the following
     facts: *)
@@ -1156,7 +1273,10 @@ Theorem combine_odd_even_intro :
     (oddb n = false -> Peven n) ->
     combine_odd_even Podd Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. unfold combine_odd_even. destruct (oddb n).
+  Case "true". apply H. reflexivity.
+  Case "false". apply H0. reflexivity.
+Qed.
 
 Theorem combine_odd_even_elim_odd :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -1164,7 +1284,8 @@ Theorem combine_odd_even_elim_odd :
     oddb n = true ->
     Podd n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold combine_odd_even. intros. rewrite H0 in H. apply H.
+Qed.
 
 Theorem combine_odd_even_elim_even :
   forall (Podd Peven : nat -> Prop) (n : nat),
@@ -1172,7 +1293,8 @@ Theorem combine_odd_even_elim_even :
     oddb n = false ->
     Peven n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold combine_odd_even. intros. rewrite H0 in H. apply H.
+Qed.
 
 (** [] *)
 
@@ -1189,15 +1311,16 @@ Proof.
     [true_upto_n__true_everywhere] that makes
     [true_upto_n_example] work. *)
 
-(*
-Fixpoint true_upto_n__true_everywhere
-(* FILL IN HERE *)
+Fixpoint true_upto_n__true_everywhere (n : nat) (f : nat->Prop) : Prop :=
+  match n with
+  | O    => forall m : nat, f m
+  | S n' => f n -> true_upto_n__true_everywhere n' f
+  end.
 
 Example true_upto_n_example :
     (true_upto_n__true_everywhere 3 (fun n => even n))
   = (even 3 -> even 2 -> even 1 -> forall m : nat, even m).
 Proof. reflexivity.  Qed.
-*)
 (** [] *)
 
 

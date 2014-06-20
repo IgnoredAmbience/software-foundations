@@ -521,7 +521,7 @@ Proof.
     intution is that [True] should be a proposition for which it is
     trivial to give evidence.) *)
 
-Inductive True : Prop := true.
+Inductive True : Prop := True_.
 (** [] *)
 
 (** However, unlike [False], which we'll use extensively, [True] is
@@ -701,14 +701,24 @@ Theorem false_beq_nat : forall n m : nat,
      n <> m ->
      beq_nat n m = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  induction n; intros m H; destruct m.
+    Case "n = 0".
+      SCase "m = 0". simpl. apply ex_falso_quodlibet. apply H. reflexivity.
+      SCase "m = Sm". reflexivity.
+    Case "n = Sn'".
+      SCase "m = 0". reflexivity.
+      SCase "m = Sm". simpl. apply IHn. unfold not. intros H1. apply H. rewrite H1. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (beq_nat_false) *)
 Theorem beq_nat_false : forall n m,
   beq_nat n m = false -> n <> m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold not.
+  induction n; destruct m; simpl; intros H0 H1; inversion H0; inversion H1.
+  Case "n=Sn,m=Sm". rewrite H3 in H2. rewrite <- beq_nat_refl in H2.  inversion H2.
+Qed.
 (** [] *)
 
 

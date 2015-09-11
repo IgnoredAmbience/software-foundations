@@ -1,11 +1,11 @@
 (** * Norm: Normalization of STLC *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 (* Chapter maintained by Andrew Tolmach *)
 
 (* (Based on TAPL Ch. 12.) *)
 
-Require Import Stlc.
+Require Export Smallstep.
+Hint Constructors multi.  
 
 (** 
 (This chapter is optional.)
@@ -41,7 +41,7 @@ extension to the boolean operators and pairs to the reader.  Even for
 the base calculus, normalization is not entirely trivial to prove,
 since each reduction of a term can duplicate redexes in subterms. *)
 
-(** **** Exercise: 1 star *)
+(** **** Exercise: 1 star  *)
 (** Where do we fail if we attempt to prove normalization by a
 straightforward induction on the size of a well-typed term? *)
 
@@ -618,8 +618,8 @@ Qed.
 
 (** Now the main lemma, which comes in two parts, one for each
    direction.  Each proceeds by induction on the structure of the type
-   [T].  In fact, this is where we make fundamental use of the
-   finiteness of types.
+   [T]. In fact, this is where we make fundamental use of the
+   structure of types. 
 
    One requirement for staying in [R_T] is to stay in type [T]. In the
    forward direction, we get this from ordinary type Preservation. *)
@@ -1086,12 +1086,12 @@ Proof.
 (** *** Normalization Theorem *)
 
 Theorem normalization : forall t T, has_type empty t T -> halts t.
-Proof. 
+Proof.
   intros.
-  replace t with (msubst nil t).
-  eapply R_halts. 
-  eapply msubst_R; eauto. instantiate (2:= nil). eauto.  
+  replace t with (msubst nil t) by reflexivity.
+  apply (@R_halts T). 
+  apply (msubst_R nil); eauto.
   eapply V_nil.
-  auto.
 Qed.
 
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

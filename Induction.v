@@ -668,15 +668,31 @@ Fixpoint normalize_bin (b : bin) : bin :=
   | M b' => M (normalize_bin b')
   end.
 
+Theorem M_nat_to_bin_commute : forall (n : nat),
+  M (nat_to_bin n) = nat_to_bin (n + n + 1).
+Proof.
+  induction n; intros.
+  simpl. reflexivity.
+  simpl.
+    assert (n + S n + 1 = S (n + n + 1)).
+    rewrite plus_S_assoc. rewrite plus_0_r. rewrite plus_S_assoc.
+    assert (n + n + 1 = S (n + n)).
+      rewrite plus_comm. reflexivity.
+    rewrite H. reflexivity.
+    rewrite H. simpl. rewrite <- IHn. reflexivity.
+Qed.
+
 Theorem bin_to_nat_nat_to_bin_normalized_commute:
   forall (b : bin),
   nat_to_bin (bin_to_nat b) = normalize_bin b.
 Proof.
   induction b as [|b'|b'].
   Case "b = B". reflexivity.
-  Case "b = M b'". simpl.
-(* Give up for now *)
-Admitted.
+  Case "b = M b'". simpl. rewrite <- IHb'. rewrite M_nat_to_bin_commute. reflexivity.
+  Case "b = T b'". simpl. rewrite <- IHb'.
+Abort.
+
+
 (** [] *)
 
 (* ###################################################################### *)

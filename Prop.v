@@ -686,10 +686,10 @@ Lemma length_0 : forall X (l : list X),
   length l = 0 -> l = [].
 Proof. intros. destruct l. reflexivity. inversion H. Qed.
 
-(*
 Theorem palindrome_converse : forall X (l:list X),
   l = rev l -> pal l.
 Proof.
+(*
   intros X l E.
   induction l as [|x l'].
   Case "l=[]". apply pal_nil.
@@ -719,13 +719,13 @@ Proof.
         (* tidy up the ind hyp *)
         rewrite L2 in IHl'. simpl in IHl'. rewrite ?snoc_append in IHl'. rewrite ?app_assoc in IHl'.
         rewrite <- ?app_singletons in IHl'.
-Abort.
 *)
 (** Bad induction hypothesis, requires y :: rev l4 ++ [y;z] = z :: y :: l4 ++ [y]
     Note z is flipped from one end to the other.
     This is because the inductive step fails to require that the list has the form x :: l' ++ [x]
     If I could use pal as the inductive step, then things would be great...
 *)
+(* GIVE UP *) Admitted.
 
 (** [] *)
 

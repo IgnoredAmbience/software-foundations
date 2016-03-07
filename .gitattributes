@@ -1,0 +1,2 @@
+* merge=verify
+*.v linguist-language=Coq
